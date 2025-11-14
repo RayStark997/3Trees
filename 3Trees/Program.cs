@@ -19,11 +19,10 @@ builder.Services.Configure<FormOptions>(options =>
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
-// Configurar Entity Framework
-builder.Services.AddEntityFrameworkSqlServer()
-    .AddDbContext<ThreeTreesDBContext>(
-        options => options.UseSqlServer(builder.Configuration.GetConnectionString("DataBase"))
-    );
+// Configurar Entity Framework (POSTGRES)
+builder.Services.AddDbContext<ThreeTreesDBContext>(options =>
+    options.UseNpgsql(builder.Configuration.GetConnectionString("DataBase"))
+);
 
 // Configurar repositórios
 builder.Services.AddScoped<ITrilhaRepositorio, TrilhaRepositorio>();
@@ -37,7 +36,7 @@ app.UseStaticFiles();
 var port = Environment.GetEnvironmentVariable("PORT");
 if (!string.IsNullOrEmpty(port))
 {
-    app.Urls.Add($"http://*:{port}"); // Render usa porta 8080
+    app.Urls.Add($"http://*:{port}");
 }
 
 // Sempre habilitar Swagger
