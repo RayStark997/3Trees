@@ -1,4 +1,3 @@
-using Microsoft.AspNetCore.Http.Features;
 using Microsoft.EntityFrameworkCore;
 using ThreeTrees.Data;
 using ThreeTrees.Repositorios;
@@ -6,44 +5,49 @@ using ThreeTrees.Repositorios.Interface;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Add services to the container.
+// Controllers
 builder.Services.AddControllers();
 
-// Configurar tamanho máximo de upload de arquivos
-builder.Services.Configure<FormOptions>(options =>
+// CORS
+builder.Services.AddCors(options =>
 {
-    options.MultipartBodyLengthLimit = 50_000_000; // 50 MB
+    options.AddPolicy("AllowAll", policy =>
+    {
+        policy.AllowAnyOrigin()
+              .AllowAnyHeader()
+              .AllowAnyMethod();
+    });
 });
 
 // Swagger
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
-// Configurar Entity Framework (POSTGRES)
+// Entity Framework + PostgreSQL
 builder.Services.AddDbContext<ThreeTreesDBContext>(options =>
     options.UseNpgsql(builder.Configuration.GetConnectionString("DataBase"))
 );
 
-// Configurar repositórios
 builder.Services.AddScoped<ITrilhaRepositorio, TrilhaRepositorio>();
 
 var app = builder.Build();
 
-// Servir arquivos estáticos
 app.UseStaticFiles();
 
-// Detectar ambiente do Render
+// Render
 var port = Environment.GetEnvironmentVariable("PORT");
 if (!string.IsNullOrEmpty(port))
 {
     app.Urls.Add($"http://*:{port}");
 }
 
-// Sempre habilitar Swagger
+// Swagger sempre
 app.UseSwagger();
 app.UseSwaggerUI();
 
-// Só redirecionar HTTPS localmente
+// CORS AQUI
+app.UseCors("AllowAll");
+
 if (app.Environment.IsDevelopment())
 {
     app.UseHttpsRedirection();
@@ -51,5 +55,4 @@ if (app.Environment.IsDevelopment())
 
 app.UseAuthorization();
 app.MapControllers();
-
 app.Run();
