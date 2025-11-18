@@ -1,4 +1,9 @@
+using _3Trees.Integracao;
+using _3Trees.Integracao.Interfaces;
+using _3Trees.Integracao.Refit;
+using _3Trees.Integracao.Response;
 using Microsoft.EntityFrameworkCore;
+using Refit;
 using ThreeTrees.Data;
 using ThreeTrees.Repositorios;
 using ThreeTrees.Repositorios.Interface;
@@ -23,12 +28,19 @@ builder.Services.AddCors(options =>
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
+//Via Cep
+builder.Services.AddRefitClient<IViaCepIntegracaoRefit>().ConfigureHttpClient(c =>
+{
+    c.BaseAddress = new Uri("https://viacep.com.br/");
+});
+
 // Entity Framework + PostgreSQL
 builder.Services.AddDbContext<ThreeTreesDBContext>(options =>
     options.UseNpgsql(builder.Configuration.GetConnectionString("DataBase"))
 );
 
 builder.Services.AddScoped<ITrilhaRepositorio, TrilhaRepositorio>();
+builder.Services.AddScoped<IViaCepIntegracao, ViaCepIntegracao>();
 
 var app = builder.Build();
 
